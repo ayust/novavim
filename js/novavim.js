@@ -2,6 +2,8 @@ Novavim = {};
 
 (function() {
 
+  var PLANET_RADIUS = 100;
+
   // Must be called before anything else.
   Novavim.init = function(selector) {
     // selector should be for a canvas object.
@@ -18,11 +20,15 @@ Novavim = {};
       "height": Novavim.height
     });
 
+    Novavim.planets = [ 
+      {
+        "x": 320,
+        "y": 240
+      }
+    ];
+
     // Add a test object
-    Novavim.world.insert({
-      "x": Novavim.width / 2,
-      "y": Novavim.height / 2
-    });
+    Novavim.world.insert(Novavim.planets[0]);
 
     Novavim.run();
   };
@@ -38,6 +44,10 @@ Novavim = {};
 
   Novavim.draw = function() {
     Novavim.clear();
+
+    $.each(Novavim.planets, function(idx, val) {
+      Novavim.draw_planet(val.x, val.y);
+    });
   };
 
   // DRAWING FUNCTIONS
@@ -46,5 +56,15 @@ Novavim = {};
     Novavim.view.fillStyle = color;
     Novavim.view.fillRect(0, 0, Novavim.width, Novavim.height);
   };
+
+  Novavim.draw_planet = function(x, y, color) {
+    var planetColor = color || "#fff";
+    Novavim.view.strokeStyle = planetColor;
+    Novavim.view.beginPath();
+    Novavim.view.arc(x, y, PLANET_RADIUS, 0, 2*Math.PI, true);
+    Novavim.view.closePath();
+    Novavim.view.stroke();
+  };
+
 
 })();
