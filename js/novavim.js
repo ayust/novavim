@@ -5,7 +5,8 @@ Novavim = {};
   var PLANET_RADIUS = 100;
 
   var ROTATION_SPEED = Math.PI / 60;
-  var MOVEMENT_SPEED = 3.0;
+  var ACCELERATION = 0.2;
+  var GRAVITY = 5000.0;
 
   // Must be called before anything else.
   Novavim.init = function(selector) { // {{{
@@ -36,7 +37,11 @@ Novavim = {};
     Novavim.player = {
       "x": 320,
       "y": 134,
-      "angle": 0
+      "angle": 0,
+      "speed": {
+        "x": 0,
+        "y": 0
+      }
     };
 
     Novavim.keys = {
@@ -59,26 +64,55 @@ Novavim = {};
   } // }}}
 
   Novavim.update = function() { // {{{
-    // Rotation
-    if(Novavim.keys.left && Novavim.keys.right) {
-      // No rotation if both keys pressed.
-    } else if(Novavim.keys.left) {
-      Novavim.player.angle -= ROTATION_SPEED;
-      if(Novavim.player.angle < 0) {
-        Novavim.player.angle += 2*Math.PI;
-      }
-    } else if(Novavim.keys.right) {
-      Novavim.player.angle += ROTATION_SPEED;
-      if(Novavim.player.angle >= 2*Math.PI) {
-        Novavim.player.angle -= 2*Math.PI;
-      }
-    }
-
     // Movement
-    if(Novavim.keys.up) {
-      Novavim.player.x += Math.sin(Novavim.player.angle) * MOVEMENT_SPEED;
-      Novavim.player.y -= Math.cos(Novavim.player.angle) * MOVEMENT_SPEED;
-    }
+    Novavim.movement.rotation();
+    Novavim.movement.acceleration();
+    Novavim.movement.gravity();
+    Novavim.player.x += Novavim.player.speed.x;
+    Novavim.player.y += Novavim.player.speed.y;
+  }; // }}}
+
+  Novavim.movement = { // {{{
+    rotation: function() { // {{{
+      if(Novavim.keys.left && Novavim.keys.right) {
+        // No rotation if both keys pressed.
+      } else if(Novavim.keys.left) {
+        Novavim.player.angle -= ROTATION_SPEED;
+        if(Novavim.player.angle < 0) {
+          Novavim.player.angle += 2*Math.PI;
+        }
+      } else if(Novavim.keys.right) {
+        Novavim.player.angle += ROTATION_SPEED;
+        if(Novavim.player.angle >= 2*Math.PI) {
+          Novavim.player.angle -= 2*Math.PI;
+        }
+      }
+    }, // }}}
+    acceleration: function() { // {{{
+      if(Novavim.keys.up) {
+        Novavim.player.speed.x += Math.sin(Novavim.player.angle) * ACCELERATION;
+        Novavim.player.speed.y -= Math.cos(Novavim.player.angle) * ACCELERATION;
+      } else if(Novavim.keys.down) {
+        Novavim.player.speed.x -= Math.sin(Novavim.player.angle) * ACCELERATION;
+        Novavim.player.speed.y += Math.cos(Novavim.player.angle) * ACCELERATION;
+      }
+    }, // }}}
+    gravity: function() { // {{{
+      // Gravity
+      $.each(Novavim.planets, function(idx, val) {
+        var deltaX = val.x - Novavim.player.x,
+            deltaY = val.y - Novavim.player.y,
+            distSquared = (deltaX*deltaX)+(deltaY*deltaY),
+            dist = Math.sqrt(distSquared),
+            vecX = deltaX / dist, 
+            vecY = deltaY / dist,
+            accel = Math.min(GRAVITY / distSquared, 0.05);
+        if(accel > 0.0001) {
+          Novavim.player.speed.x += vecX * accel;
+          Novavim.player.speed.y += vecY * accel;
+        }
+      });
+    } // }}}
   }; // }}}
 
   Novavim.render = function() { // {{{
