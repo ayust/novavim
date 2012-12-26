@@ -48,22 +48,58 @@ Novavim = {};
     $.each(Novavim.planets, function(idx, val) {
       Novavim.draw_planet(val.x, val.y);
     });
+
+    Novavim.draw_ship(320, 139);
   };
 
   // DRAWING FUNCTIONS
   Novavim.clear = function(color) {
-    var clearColor = color || "#000";
+    color = color || "#000";
+
     Novavim.view.fillStyle = color;
     Novavim.view.fillRect(0, 0, Novavim.width, Novavim.height);
   };
 
+  // x,y is the center of the planet
   Novavim.draw_planet = function(x, y, color) {
-    var planetColor = color || "#fff";
-    Novavim.view.strokeStyle = planetColor;
+    color = color || "#fff";
+
+    Novavim.view.save();
+    Novavim.view.translate(x, y);
+    Novavim.view.strokeStyle = color;
     Novavim.view.beginPath();
-    Novavim.view.arc(x, y, PLANET_RADIUS, 0, 2*Math.PI, true);
+    Novavim.view.arc(0, 0, PLANET_RADIUS, 0, 2*Math.PI, true);
     Novavim.view.closePath();
     Novavim.view.stroke();
+    Novavim.view.restore();
+  };
+
+  // x,y is the base of the ship
+  Novavim.draw_ship = function(x, y, angle, color) {
+    color = color || "#c2d";
+    angle = angle || 0;
+
+    Novavim.view.save();
+    Novavim.view.translate(x, y);
+    Novavim.view.rotate(angle);
+    Novavim.view.strokeStyle = color;
+    Novavim.view.beginPath();
+
+    Novavim.view.moveTo(0, 0);
+    Novavim.view.lineTo(-6, -6);
+    Novavim.view.lineTo(-10, 1);
+    Novavim.view.lineTo(-8, -10);
+    Novavim.view.lineTo(-4, -8);
+    Novavim.view.lineTo(0, -20);
+    Novavim.view.lineTo(4, -8);
+    Novavim.view.lineTo(8, -10);
+    Novavim.view.lineTo(10, 1);
+    Novavim.view.lineTo(6, -6);
+    Novavim.view.lineTo(0, 0);
+    
+    Novavim.view.closePath();
+    Novavim.view.stroke();
+    Novavim.view.restore();
   };
 
 
