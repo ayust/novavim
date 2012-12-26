@@ -4,7 +4,7 @@ Novavim = {};
 
   var PLANET_RADIUS = 100;
 
-  var ROTATION_SPEED = Math.PI / 60;
+  var ROTATION_SPEED = Math.PI / 50;
   var ACCELERATION = 0.2;
   var GRAVITY = 5000.0;
   var MAX_GRAVITY_ACCELERATION = 0.05;
@@ -36,11 +36,14 @@ Novavim = {};
       {
         "x": 0,
         "y": 0
+      },
+      {
+        "x": 600,
+        "y": 0
       }
     ];
 
-    // Add a test object
-    Novavim.world.insert(Novavim.planets[0]);
+    Novavim.world.insert(Novavim.planets);
 
     Novavim.player = {
       "alive": true,
@@ -176,7 +179,7 @@ Novavim = {};
   Novavim.render = function() { // {{{
     Novavim.clear();
 
-    Novavim.draw.line(0, 0, 10, 10);
+    Novavim.view.save();
 
     $.each(Novavim.planets, function(idx, val) {
       Novavim.draw.planet(val.x, val.y);
@@ -186,6 +189,8 @@ Novavim = {};
     if(player.alive) {
       Novavim.draw.ship(player.x, player.y, player.angle);
     }
+
+    Novavim.view.restore();
   }; // }}}
 
   Novavim.keydown = function(e) { // {{{
@@ -243,10 +248,15 @@ Novavim = {};
   // DRAWING FUNCTIONS
   Novavim.draw = { // {{{
 
+    intoWorldCoords: function() { // {{{
+      Novavim.view.translate(-1*Novavim.player.x, -1*Novavim.player.y);
+    },
+
     line: function(x1, y1, x2, y2, color) { // {{{
       color = color || "#f00";
 
       Novavim.view.save();
+      Novavim.draw.intoWorldCoords();
       Novavim.view.strokeStyle = color;
       Novavim.view.beginPath();
       Novavim.view.moveTo(x1, y1);
@@ -261,6 +271,7 @@ Novavim = {};
       color = color || "#666";
 
       Novavim.view.save();
+      Novavim.draw.intoWorldCoords();
       Novavim.view.translate(x, y);
       Novavim.view.strokeStyle = color;
       Novavim.view.beginPath();
@@ -276,6 +287,7 @@ Novavim = {};
       angle = angle || 0;
 
       Novavim.view.save();
+      Novavim.draw.intoWorldCoords();
       Novavim.view.translate(x, y);
       Novavim.view.rotate(Math.PI / 2 + angle);
       Novavim.view.strokeStyle = color;
