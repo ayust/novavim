@@ -13,7 +13,7 @@ Novavim = {};
   var LANDING_DISTANCE = 6;
   var LANDING_SPEED = 2.0;
 
-  var SIZE_OF_SPACE = 5000;
+  var SIZE_OF_SPACE = 1000;
 
   // Must be called before anything else.
   Novavim.init = function(selector) { // {{{
@@ -37,21 +37,23 @@ Novavim = {};
 
     Novavim.planets = [ 
       {
-        "x": 0,
+        "x": -300,
         "y": 0
       },
       {
-        "x": 600,
+        "x": 300,
         "y": 0
       }
     ];
+
+    Novavim.timer = 0;
 
     Novavim.world.insert(Novavim.planets);
 
     Novavim.player = {
       "alive": true,
       "landed": false,
-      "x": 0,
+      "x": -300,
       "y": PLANET_RADIUS + LANDING_DISTANCE,
       "angle": Math.PI / 2,
       "speed": {
@@ -104,6 +106,10 @@ Novavim = {};
       Novavim.player.y -= 2 * SIZE_OF_SPACE;
     } else if(Novavim.player.y < -SIZE_OF_SPACE) {
       Novavim.player.y += 2 * SIZE_OF_SPACE; 
+    }
+
+    if(!Novavim.player.landed) {
+      Novavim.timer += 1;
     }
   }; // }}}
 
@@ -209,10 +215,15 @@ Novavim = {};
     Novavim.clear();
 
     if(!Novavim.player.alive) {
+      Novavim.view.save();
       Novavim.view.setTransform(1, 0, 0, 1, 0, 0);
       Novavim.view.font = "20pt sans-serif";
       Novavim.view.fillStyle = "#f00";
-      Novavim.view.fillText("You died...", Novavim.width / 2, Novavim.height / 2);
+      Novavim.view.fillText(
+        "You died... (Refresh to try again.)",
+        Novavim.width / 4, Novavim.height / 2
+      );
+      Novavim.view.restore();
       return;
     }
 
@@ -232,6 +243,8 @@ Novavim = {};
     }
 
     Novavim.draw.minimap();
+
+    Novavim.draw.timer();
 
     Novavim.view.restore();
   }; // }}}
@@ -293,7 +306,19 @@ Novavim = {};
 
     intoWorldCoords: function() { // {{{
       Novavim.view.translate(-1*Novavim.player.x, -1*Novavim.player.y);
-    },
+    }, // }}}
+
+    timer: function() { // {{{
+      Novavim.view.save()
+      Novavim.view.transform(1, 0, 0, -1, 0, 0);
+      Novavim.view.font = "20pt sans-serif";
+      Novavim.view.fillStyle = "#aaa";
+      Novavim.view.fillText(
+        '' + Novavim.timer,
+        0, Novavim.height / 2
+      );
+      Novavim.view.restore();
+    }, // }}}
 
     line: function(x1, y1, x2, y2, color) { // {{{
       color = color || "#f00";
