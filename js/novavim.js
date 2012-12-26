@@ -47,6 +47,7 @@ Novavim = {};
 
     Novavim.player = {
       "alive": true,
+      "landed": false,
       "x": 0,
       "y": PLANET_RADIUS + LANDING_DISTANCE,
       "angle": Math.PI / 2,
@@ -128,7 +129,13 @@ Novavim = {};
     }, // }}}
 
     landing: function() { // {{{
+      Novavim.player.landed = false;
       $.each(Novavim.planets, function(idx, val) {
+        // If we already know we've landed on a different planet,
+        // don't bother checking the others.
+        if(Novavim.player.landed) { return; }
+        val.landedOn = false;
+
         // A player can land on a planet if:
         //  - they're within LANDING_DISTANCE of the surface
         //  - they're moving at less than LANDING_SPEED
@@ -159,6 +166,8 @@ Novavim = {};
         Novavim.player.angle = normalAngle;
         Novavim.player.speed.x = 0;
         Novavim.player.speed.y = 0;
+        Novavim.player.landed = true;
+        val.landedOn = true;
       });
     }, // }}}
 
@@ -182,7 +191,11 @@ Novavim = {};
     Novavim.view.save();
 
     $.each(Novavim.planets, function(idx, val) {
-      Novavim.draw.planet(val.x, val.y);
+      if(val.landedOn) {
+        Novavim.draw.planet(val.x, val.y, "#660");
+      } else {
+        Novavim.draw.planet(val.x, val.y);
+      }
     });
 
     var player = Novavim.player;
@@ -256,7 +269,6 @@ Novavim = {};
       color = color || "#f00";
 
       Novavim.view.save();
-      Novavim.draw.intoWorldCoords();
       Novavim.view.strokeStyle = color;
       Novavim.view.beginPath();
       Novavim.view.moveTo(x1, y1);
