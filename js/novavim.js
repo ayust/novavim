@@ -3,6 +3,7 @@ Novavim = {};
 (function() {
 
   var PLANET_RADIUS = 100;
+  var MINIMAP_SIZE = 100; // Actually twice this size
 
   var ROTATION_SPEED = Math.PI / 50;
   var ACCELERATION = 0.2;
@@ -11,6 +12,8 @@ Novavim = {};
 
   var LANDING_DISTANCE = 6;
   var LANDING_SPEED = 2.0;
+
+  var SIZE_OF_SPACE = 5000;
 
   // Must be called before anything else.
   Novavim.init = function(selector) { // {{{
@@ -77,14 +80,31 @@ Novavim = {};
   } // }}}
 
   Novavim.update = function() { // {{{
+    if(!Novavim.player.alive) {
+      return;
+    }
+
     // Movement
     Novavim.movement.rotation();
     Novavim.movement.gravity();
     Novavim.movement.landing();
     Novavim.movement.acceleration();
     Novavim.movement.collision();
+
     Novavim.player.x += Novavim.player.speed.x;
     Novavim.player.y += Novavim.player.speed.y;
+
+    if(Novavim.player.x > SIZE_OF_SPACE) {
+      Novavim.player.x -= 2 * SIZE_OF_SPACE;
+    } else if(Novavim.player.x < -SIZE_OF_SPACE) {
+      Novavim.player.x += 2 * SIZE_OF_SPACE; 
+    }
+
+    if(Novavim.player.y > SIZE_OF_SPACE) {
+      Novavim.player.y -= 2 * SIZE_OF_SPACE;
+    } else if(Novavim.player.y < -SIZE_OF_SPACE) {
+      Novavim.player.y += 2 * SIZE_OF_SPACE; 
+    }
   }; // }}}
 
   Novavim.movement = { // {{{
@@ -188,6 +208,14 @@ Novavim = {};
   Novavim.render = function() { // {{{
     Novavim.clear();
 
+    if(!Novavim.player.alive) {
+      Novavim.view.setTransform(1, 0, 0, 1, 0, 0);
+      Novavim.view.font = "20pt sans-serif";
+      Novavim.view.fillStyle = "#f00";
+      Novavim.view.fillText("You died...", Novavim.width / 2, Novavim.height / 2);
+      return;
+    }
+
     Novavim.view.save();
 
     $.each(Novavim.planets, function(idx, val) {
@@ -202,6 +230,8 @@ Novavim = {};
     if(player.alive) {
       Novavim.draw.ship(player.x, player.y, player.angle);
     }
+
+    Novavim.draw.minimap();
 
     Novavim.view.restore();
   }; // }}}
@@ -319,6 +349,41 @@ Novavim = {};
       
       Novavim.view.closePath();
       Novavim.view.stroke();
+      Novavim.view.restore();
+    }, // }}}
+
+    minimap: function() { // {{{
+      var minimapX = (Novavim.width / 2) - MINIMAP_SIZE - 1,
+          minimapY = MINIMAP_SIZE - (Novavim.height / 2) + 1;
+
+      Novavim.view.save();
+      Novavim.view.translate(minimapX, minimapY);
+
+      Novavim.view.strokeStyle = "#fff";
+      Novavim.view.fillStyle = "#000";
+      Novavim.view.fillRect(-MINIMAP_SIZE, -MINIMAP_SIZE, 2*MINIMAP_SIZE, 2*MINIMAP_SIZE);
+      Novavim.view.strokeRect(-MINIMAP_SIZE, -MINIMAP_SIZE, 2*MINIMAP_SIZE, 2*MINIMAP_SIZE);
+
+      Novavim.view.fillStyle = "#444";
+      $.each(Novavim.planets, function(idx, val) {
+        var miniPlanetX = val.x / SIZE_OF_SPACE * MINIMAP_SIZE,
+            miniPlanetY = val.y / SIZE_OF_SPACE * MINIMAP_SIZE;
+
+        Novavim.view.beginPath();
+        Novavim.view.arc(miniPlanetX, miniPlanetY, 3, 0, 2*Math.PI, true);
+        Novavim.view.fill();
+      });
+
+      var miniPlayerX = Novavim.player.x / SIZE_OF_SPACE * MINIMAP_SIZE,
+          miniPlayerY = Novavim.player.y / SIZE_OF_SPACE * MINIMAP_SIZE;
+
+      if(Novavim.player.alive) {
+        Novavim.view.fillStyle = "#c2d";
+        Novavim.view.beginPath();
+        Novavim.view.arc(miniPlayerX, miniPlayerY, 2, 0, 2*Math.PI, true);
+        Novavim.view.fill();
+      }
+
       Novavim.view.restore();
     } // }}}
 
