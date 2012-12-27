@@ -414,8 +414,15 @@ Novavim = {};
     spacedust: function() { // {{{
       var dustRootX = Math.floor(Novavim.player.x / SPACEDUST_DENSITY),
           dustRootY = Math.floor(Novavim.player.y / SPACEDUST_DENSITY),
-          spaceDustCountX = Math.floor(Novavim.width / 2 / SPACEDUST_DENSITY) + 1,
-          spaceDustCountY = Math.floor(Novavim.height / 2 / SPACEDUST_DENSITY) + 1;
+          spaceDustCountX = Math.floor(Novavim.width / 4 * 3 / SPACEDUST_DENSITY) + 1,
+          spaceDustCountY = Math.floor(Novavim.height / 4 * 3 / SPACEDUST_DENSITY) + 1;
+
+      if(!Novavim.spacedustRandom) {
+        Novavim.spacedustRandom = [];
+        for(var i=0; i < spaceDustCountX * spaceDustCountY; i++) {
+          Novavim.spacedustRandom.push(Math.random());
+        }
+      }
 
       Novavim.view.save();
       Novavim.draw.intoWorldCoords();
@@ -423,10 +430,14 @@ Novavim = {};
       for(var x = -spaceDustCountX; x <= spaceDustCountX; x++) {
         for(var y = -spaceDustCountY; y <= spaceDustCountY; y++) {
           var dustX = (dustRootX + x) * SPACEDUST_DENSITY,
-              dustY = (dustRootY + y) * SPACEDUST_DENSITY;
-          dustX += ((dustX * 1697) % 241) - 120;
-          dustY += ((dustY * 2003) % 241) - 120;
-          Novavim.view.fillRect(dustX, dustY, 1, 1);
+              dustY = (dustRootY + y) * SPACEDUST_DENSITY,
+              randomX = (dustRootX + x) % spaceDustCountX,
+              randomY = (dustRootY + y) % spaceDustCountY,
+              randomIndexX = randomX + (randomY * spaceDustCountX),
+              randomIndexY = randomY + (randomX * spaceDustCountY),
+              offsetX = (Novavim.width * Novavim.spacedustRandom[randomIndexX] - (Novavim.width / 2)) / 2,
+              offsetY = (Novavim.height * Novavim.spacedustRandom[randomIndexY] - (Novavim.height / 2)) / 2;
+          Novavim.view.fillRect(dustX + offsetX, dustY + offsetY, 1, 1);
         }
       }
       Novavim.view.restore();
