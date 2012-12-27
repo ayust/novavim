@@ -431,8 +431,8 @@ Novavim = {};
         for(var y = -spaceDustCountY; y <= spaceDustCountY; y++) {
           var dustX = (dustRootX + x) * SPACEDUST_DENSITY,
               dustY = (dustRootY + y) * SPACEDUST_DENSITY,
-              randomX = (dustRootX + x) % spaceDustCountX,
-              randomY = (dustRootY + y) % spaceDustCountY,
+              randomX = Math.abs((dustRootX + x) % spaceDustCountX),
+              randomY = Math.abs((dustRootY + y) % spaceDustCountY),
               randomIndexX = randomX + (randomY * spaceDustCountX),
               randomIndexY = randomY + (randomX * spaceDustCountY),
               offsetX = (Novavim.width * Novavim.spacedustRandom[randomIndexX] - (Novavim.width / 2)) / 2,
