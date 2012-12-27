@@ -7,7 +7,7 @@ Novavim = {};
 
   var MINIMAP_SIZE = 100; // Actually twice this size
 
-  var SPACEDUST_DENSITY = 100;
+  var SPACEDUST_DENSITY = 200;
 
   var ROTATION_SPEED = Math.PI / 50;
   var ACCELERATION = 0.2;
