@@ -9,6 +9,7 @@ Novavim = {};
   var ACCELERATION = 0.2;
   var GRAVITY = 5000.0;
   var MAX_GRAVITY_ACCELERATION = 0.05;
+  var MIN_GRAVITY_ACCELERATION = 0.01;
 
   var LANDING_DISTANCE = 6;
   var LANDING_SPEED = 2.0;
@@ -37,16 +38,59 @@ Novavim = {};
 
     Novavim.planets = [ 
       {
+        "name": "Alpha",
         "x": 0,
         "y": 0
       },
       {
+        "name": "Beta",
         "x": 600,
         "y": 0
       }
     ];
 
     Novavim.world.insert(Novavim.planets);
+
+    var xBound = SIZE_OF_SPACE - Novavim.width;
+    var yBound = SIZE_OF_SPACE - Novavim.height;
+    var failures = 0;
+    // Generate some other random planets
+    for(var i=0; i < 10 && failures < 100; i++) {
+      var newX = Math.floor(2*xBound*Math.random()) - xBound;
+      var newY = Math.floor(2*yBound*Math.random()) - yBound;
+      var possibleConflicts = Novavim.world.retrieve({
+        "x": newX,
+        "y": newY,
+        "height": PLANET_RADIUS * 10,
+        "width": PLANET_RADIUS * 10
+      });
+      var conflicts = 0;
+      $.each(possibleConflicts, function(idx, val) {
+        if(Math.abs(val.x - newX) < PLANET_RADIUS * 10 &&
+           Math.abs(val.y - newY) < PLANET_RADIUS * 10) {
+          conflicts++;
+        } else {
+          console.log(val.x - newX);
+          console.log(val.y - newY);
+        }
+      });
+      if(conflicts) {
+        // Overlaps, try again.
+        i--;
+        failures++;
+        console.log("Failure: " + failures + " (" + newX + "," + newY + ")");
+        console.log(conflicts);
+        continue;
+      }
+      console.log("Success: " + i);
+      var planet = {
+        "name": "" + i,
+        "x": newX,
+        "y": newY
+      };
+      Novavim.planets.push(planet);
+      Novavim.world.insert(planet);
+    }
 
     Novavim.player = {
       "alive": true,
@@ -141,7 +185,7 @@ Novavim = {};
             vecX = deltaX / dist, 
             vecY = deltaY / dist,
             accel = Math.min(GRAVITY / distSquared, MAX_GRAVITY_ACCELERATION);
-        if(accel > 0.0001) {
+        if(accel > MIN_GRAVITY_ACCELERATION) {
           Novavim.player.speed.x += vecX * accel;
           Novavim.player.speed.y += vecY * accel;
         }
@@ -220,9 +264,9 @@ Novavim = {};
 
     $.each(Novavim.planets, function(idx, val) {
       if(val.landedOn) {
-        Novavim.draw.planet(val.x, val.y, "#660");
+        Novavim.draw.planet(val.x, val.y, "#660", val.name);
       } else {
-        Novavim.draw.planet(val.x, val.y);
+        Novavim.draw.planet(val.x, val.y, null, val.name);
       }
     });
 
@@ -293,7 +337,7 @@ Novavim = {};
 
     intoWorldCoords: function() { // {{{
       Novavim.view.translate(-1*Novavim.player.x, -1*Novavim.player.y);
-    },
+    }, // }}}
 
     line: function(x1, y1, x2, y2, color) { // {{{
       color = color || "#f00";
@@ -309,8 +353,9 @@ Novavim = {};
     }, // }}}
 
     // x,y is the center of the planet
-    planet: function(x, y, color) { // {{{
+    planet: function(x, y, color, name) { // {{{
       color = color || "#666";
+      name = name || "";
 
       Novavim.view.save();
       Novavim.draw.intoWorldCoords();
@@ -320,6 +365,11 @@ Novavim = {};
       Novavim.view.arc(0, 0, PLANET_RADIUS, 0, 2*Math.PI, true);
       Novavim.view.closePath();
       Novavim.view.stroke();
+      Novavim.view.font = "20px Arial";
+      Novavim.view.textAlign = "center";
+      Novavim.view.fillStyle = "#fff";
+      Novavim.view.transform(1, 0, 0, -1, 0, 0);
+      Novavim.view.fillText(name, 0, 10);
       Novavim.view.restore();
     }, // }}}
 
