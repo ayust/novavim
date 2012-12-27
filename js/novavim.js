@@ -260,6 +260,11 @@ Novavim = {};
     Novavim.view.save();
 
     $.each(Novavim.planets, function(idx, val) {
+      if(Math.abs(val.x - Novavim.player.x) > PLANET_RADIUS + (Novavim.width / 2) ||
+         Math.abs(val.y - Novavim.player.y) > PLANET_RADIUS + (Novavim.height / 2)) {
+        // Don't render planets that are off the screen
+        return;
+      }
       if(val.landedOn) {
         Novavim.draw.planet(val.x, val.y, "#660", val.name);
       } else {
