@@ -248,10 +248,12 @@ Novavim = {};
     Novavim.clear();
 
     if(!Novavim.player.alive) {
+      Novavim.view.save();
       Novavim.view.setTransform(1, 0, 0, 1, 0, 0);
       Novavim.view.font = "20pt sans-serif";
       Novavim.view.fillStyle = "#f00";
       Novavim.view.fillText("You died...", Novavim.width / 2, Novavim.height / 2);
+      Novavim.view.restore();
       return;
     }
 
