@@ -4,7 +4,10 @@ Novavim = {};
 
   var NUMBER_OF_PLANETS = 12;
   var PLANET_RADIUS = 100;
+
   var MINIMAP_SIZE = 100; // Actually twice this size
+
+  var SPACEDUST_DENSITY = 100;
 
   var ROTATION_SPEED = Math.PI / 50;
   var ACCELERATION = 0.2;
@@ -259,6 +262,8 @@ Novavim = {};
 
     Novavim.view.save();
 
+    Novavim.draw.spacedust();
+
     $.each(Novavim.planets, function(idx, val) {
       if(Math.abs(val.x - Novavim.player.x) > PLANET_RADIUS + (Novavim.width / 2) ||
          Math.abs(val.y - Novavim.player.y) > PLANET_RADIUS + (Novavim.height / 2)) {
@@ -363,9 +368,11 @@ Novavim = {};
       Novavim.draw.intoWorldCoords();
       Novavim.view.translate(x, y);
       Novavim.view.strokeStyle = color;
+      Novavim.view.fillStyle = "#000";
       Novavim.view.beginPath();
       Novavim.view.arc(0, 0, PLANET_RADIUS, 0, 2*Math.PI, true);
       Novavim.view.closePath();
+      Novavim.view.fill();
       Novavim.view.stroke();
       Novavim.view.font = "20px Arial";
       Novavim.view.textAlign = "center";
@@ -401,6 +408,27 @@ Novavim = {};
       
       Novavim.view.closePath();
       Novavim.view.stroke();
+      Novavim.view.restore();
+    }, // }}}
+
+    spacedust: function() { // {{{
+      var dustRootX = Math.floor(Novavim.player.x / SPACEDUST_DENSITY),
+          dustRootY = Math.floor(Novavim.player.y / SPACEDUST_DENSITY),
+          spaceDustCountX = Math.floor(Novavim.width / 2 / SPACEDUST_DENSITY) + 1,
+          spaceDustCountY = Math.floor(Novavim.height / 2 / SPACEDUST_DENSITY) + 1;
+
+      Novavim.view.save();
+      Novavim.draw.intoWorldCoords();
+      Novavim.view.fillStyle = "#999";
+      for(var x = -spaceDustCountX; x <= spaceDustCountX; x++) {
+        for(var y = -spaceDustCountY; y <= spaceDustCountY; y++) {
+          var dustX = (dustRootX + x) * SPACEDUST_DENSITY,
+              dustY = (dustRootY + y) * SPACEDUST_DENSITY;
+          dustX += ((dustX * 1697) % 241) - 120;
+          dustY += ((dustY * 2003) % 241) - 120;
+          Novavim.view.fillRect(dustX, dustY, 1, 1);
+        }
+      }
       Novavim.view.restore();
     }, // }}}
 
